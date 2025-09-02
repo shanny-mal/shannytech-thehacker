@@ -1,6 +1,7 @@
 import HeroSection from '../components/HeroSection';
 import FeaturesGrid from '../components/FeaturesGrid';
 import ServicesPreview from '../components/ServicesPreview';
+import Testimonials from '../components/Testimonials';
 
 export default function Home() {
    return (
@@ -15,6 +16,11 @@ export default function Home() {
             <section className="py-16 bg-slate-50 dark:bg-slate-800">
                <div className="mx-auto max-w-7xl px-4 md:px-8">
                   <FeaturesGrid />
+               </div>
+            </section>
+            <section className="py-16">
+               <div className="mx-auto max-w-7xl px-4 md:px-8">
+                  <Testimonials />
                </div>
             </section>
          </main>
