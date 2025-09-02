@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import {
    useCallback,
    useEffect,
