@@ -197,7 +197,7 @@ function FeatureCard() {
 /* -------------------------
    Main component
    ------------------------- */
-export default function HeroSection(): JSX.Element {
+function HeroSection(): JSX.Element {
    const prefersReducedMotion = usePrefersReducedMotion();
    const slides = useMemo(() => SLIDES, []);
    const [index, setIndex] = useState<number>(0);
@@ -445,3 +445,5 @@ function usePrefersReducedMotion(): boolean {
    }, []);
    return prefersReducedMotion;
 }
+
+export default HeroSection;
