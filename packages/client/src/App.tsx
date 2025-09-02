@@ -8,7 +8,7 @@ function App() {
          res.json().then((data) => setMessage(data.message))
       );
    }, []);
-    return <p>Message from backend: {message}</p>;
+    return <p className="font-bold text-3xl">Message from backend: {message}</p>;
 }
 
 export default App;
