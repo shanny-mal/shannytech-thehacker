@@ -4,6 +4,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent'; // ensure this file exists
 
 /* Lazy-loaded pages (faster initial bundle) */
 const Home = lazy(() => import('./pages/Home'));
@@ -37,8 +38,7 @@ class RouteErrorBoundary extends React.Component<
    }
 
    componentDidCatch(_error: unknown, _info: unknown) {
-      // you can log the error to an analytics/monitoring service here
-      // console.error("Route error:", error, info);
+      // Optionally log errors to your monitoring service here.
    }
 
    render() {
@@ -58,7 +58,7 @@ class RouteErrorBoundary extends React.Component<
                   </p>
                   <button
                      onClick={() => this.setState({ hasError: false })}
-                     className="inline-flex items-center px-4 py-2 rounded bg-sky-500 text-white hover:brightness-95 transition"
+                     className="inline-flex items-center px-4 py-2 rounded bg-amber-400 text-black hover:brightness-95 transition"
                   >
                      Try again
                   </button>
@@ -66,6 +66,7 @@ class RouteErrorBoundary extends React.Component<
             </main>
          );
       }
+
       return this.props.children as React.ReactElement;
    }
 }
@@ -74,7 +75,7 @@ class RouteErrorBoundary extends React.Component<
 function ScrollToTop(): null {
    const { pathname } = useLocation();
    React.useEffect(() => {
-      // Use instant scroll on route change to avoid safari/history jank
+      // Instantly scroll to top on route changes (avoids jank when using lazy routes)
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
    }, [pathname]);
    return null;
@@ -83,8 +84,6 @@ function ScrollToTop(): null {
 /* App component */
 export default function App(): JSX.Element {
    return (
-      // If you already wrap <App /> with BrowserRouter in index.tsx, remove this BrowserRouter here.
-
       <div className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
          <Header />
 
@@ -92,9 +91,7 @@ export default function App(): JSX.Element {
          <ScrollToTop />
 
          {/* Main: add top padding to account for the fixed TopRibbon + Navbar.
-              Adjust the 'paddingTop' value if you change header heights.
-              Example: TopRibbon (h-11) + nav (h-16) ~ 11 + 16 = 27 -> 6.5rem ≈ 104px.
-              I used 5.5rem (88px) as a starting point — tweak as needed. */}
+          Adjust the 'paddingTop' value if you change header heights. */}
          <main
             id="main-content"
             className="flex-1"
@@ -104,16 +101,16 @@ export default function App(): JSX.Element {
                <Suspense fallback={<LoadingFallback />}>
                   <Routes>
                      <Route path="/" element={<Home />} />
-                     {/* Add other routes here, eg:
-                      <Route path="/services" element={<Services />} />
-                      <Route path="/contact" element={<Contact />} />
-                  */}
+                     {/* Add other routes here: /services, /contact, etc. */}
                   </Routes>
                </Suspense>
             </RouteErrorBoundary>
          </main>
 
          <Footer />
+
+         {/* Global cookie consent banner — appears on first visit (client-only) */}
+         <CookieConsent privacyHref="/privacy" />
       </div>
    );
 }
