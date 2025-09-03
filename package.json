@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "cd packages/client && bun run build",
     "dev": "bun run index.ts",
     "format": "prettier --write .",
     "prepare": "husky"
