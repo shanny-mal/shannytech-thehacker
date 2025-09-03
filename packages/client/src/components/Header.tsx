@@ -22,19 +22,27 @@ import {
    FaMapMarkerAlt,
    FaEnvelope,
 } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
+import {
+   FiCpu,
+   FiShield,
+   FiGlobe,
+   FiUsers,
+   FiDatabase,
+   FiHeadphones,
+   FiCode,
+   FiSmartphone,
+   FiCloud,
+} from 'react-icons/fi';
+
 import SearchBar from './SearchBar';
 import useOnClickOutside from '../hooks/useOnClickOutside';
 import useScrollSpy from '../hooks/useScrollSpy';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/logo/logo.png';
 
-/**
- * Modern Header + Top Ribbon
- * - Full-width ribbon with social icons (left), sliding statement (center),
- *   contact info (right)
- * - Full-width sticky nav (background applied to full-width element)
- * - Desktop dropdown + mobile drawer
- */
+// shadcn/ui — update paths if your project uses different alias
+import { Button } from '@/components/ui/button';
 
 /* ---------------------------
    Content data
@@ -49,24 +57,57 @@ const NAV_LINKS = [
 
 const SERVICES = [
    {
-      id: 'web',
-      title: 'Web Development',
-      slug: 'web-development',
-      desc: 'Fast, accessible React & static sites',
+      id: 'ai',
+      title: 'AI Integrations',
+      slug: 'ai-integrations',
+      desc: 'RAG, chat assistants, semantic search',
    },
    {
-      id: 'mobile',
-      title: 'Mobile Apps',
-      slug: 'mobile-apps',
-      desc: 'iOS & Android',
+      id: 'cybersecurity',
+      title: 'Cybersecurity',
+      slug: 'cybersecurity',
+      desc: 'Protect your digital assets',
    },
    {
-      id: 'cloud',
-      title: 'Cloud & DevOps',
-      slug: 'cloud-devops',
-      desc: 'Scalable infra & observability',
+      id: 'network',
+      title: 'Networking',
+      slug: 'networking',
+      desc: 'Design & optimize hybrid networks',
+   },
+   {
+      id: 'consulting',
+      title: 'IT Consulting',
+      slug: 'it-consulting',
+      desc: 'Strategy, audits & assessments',
+   },
+   {
+      id: 'data',
+      title: 'Data Solutions',
+      slug: 'data-solutions',
+      desc: 'ETL, warehousing & visualization',
+   },
+   {
+      id: 'it-support',
+      title: 'IT Support',
+      slug: 'it-support',
+      desc: 'Managed services & helpdesk',
    },
 ];
+
+/* ---------------------------
+   Icon mapping for services
+   --------------------------- */
+const SERVICE_ICON_MAP: Record<string, IconType> = {
+   ai: FiCpu,
+   cybersecurity: FiShield,
+   network: FiGlobe,
+   consulting: FiUsers,
+   data: FiDatabase,
+   'it-support': FiHeadphones,
+   web: FiCode,
+   mobile: FiSmartphone,
+   cloud: FiCloud,
+};
 
 /* ---------------------------
    Component
@@ -80,26 +121,31 @@ export default function Header(): JSX.Element {
    const dropdownRef = useRef<HTMLDivElement | null>(null);
    useOnClickOutside(dropdownRef, () => setServicesOpen(false));
 
+   // mobile panel outside click
+   const mobileRef = useRef<HTMLDivElement | null>(null);
+   useOnClickOutside(mobileRef, () => setMobileOpen(false));
+
    const current = useScrollSpy(
       NAV_LINKS.map((l) => l.id),
-      { offset: -80 }
+      { offset: -88 }
    );
 
-   // debounced-ish scroll handler
+   // efficient scroll shadow/background toggle
    useEffect(() => {
-      let raf = 0;
+      if (typeof window === 'undefined') return;
+      let ticking = false;
       const onScroll = () => {
-         if (raf) cancelAnimationFrame(raf);
-         raf = requestAnimationFrame(() => {
-            setScrolled(window.scrollY > 48);
-         });
+         if (!ticking) {
+            window.requestAnimationFrame(() => {
+               setScrolled(window.scrollY > 56);
+               ticking = false;
+            });
+            ticking = true;
+         }
       };
       window.addEventListener('scroll', onScroll, { passive: true });
       onScroll();
-      return () => {
-         if (raf) cancelAnimationFrame(raf);
-         window.removeEventListener('scroll', onScroll);
-      };
+      return () => window.removeEventListener('scroll', onScroll);
    }, []);
 
    // close menus with Escape
@@ -112,12 +158,37 @@ export default function Header(): JSX.Element {
       }
    }, []);
    useEffect(() => {
+      if (typeof document === 'undefined') return;
       document.addEventListener('keydown', onEsc);
       return () => document.removeEventListener('keydown', onEsc);
    }, [onEsc]);
 
+   // toggle mobile
+   const toggleMobile = useCallback(() => {
+      startTransition(() => setMobileOpen((o) => !o));
+   }, []);
+
+   // open services keyboard handler
+   const handleServicesKey = useCallback((e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+         e.preventDefault();
+         setServicesOpen((s) => !s);
+      }
+      if (e.key === 'Escape') {
+         setServicesOpen(false);
+      }
+   }, []);
+
    return (
       <>
+         {/* Skip to content */}
+         <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:visible fixed top-4 left-4 z-50 bg-white dark:bg-slate-800 p-2 rounded shadow"
+         >
+            Skip to content
+         </a>
+
          <TopRibbonSliding />
 
          <motion.nav
@@ -127,9 +198,9 @@ export default function Header(): JSX.Element {
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 280, damping: 28 }}
             className={classNames(
-               'fixed inset-x-0 top-0 z-40 pt-[3.25rem] transition-colors duration-250',
+               'fixed inset-x-0 top-0 z-40 pt-[3.25rem] transition-colors duration-200',
                scrolled
-                  ? 'backdrop-blur-md bg-white/80 dark:bg-slate-900/70 shadow-sm'
+                  ? 'backdrop-blur-md bg-white/85 dark:bg-black/70 shadow'
                   : 'bg-transparent'
             )}
          >
@@ -145,16 +216,13 @@ export default function Header(): JSX.Element {
                      <motion.img
                         src={logo}
                         alt="ShannyTech logo"
-                        className="h-10 w-10 rounded-lg shadow-md"
-                        whileHover={{ rotate: 6, scale: 1.02 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
+                        className="h-10 w-10 rounded-md shadow-sm"
+                        whileHover={{ rotate: 6, scale: 1.03 }}
+                        transition={{ type: 'spring', stiffness: 320 }}
                      />
                      <div className="leading-tight">
-                        <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        <div className="text-lg font-semibold text-slate-900 dark:text-white">
                            ShannyTech
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block">
-                           Digital Products & AI Integrations
                         </div>
                      </div>
                   </Link>
@@ -172,12 +240,7 @@ export default function Header(): JSX.Element {
                                  aria-expanded={servicesOpen}
                                  aria-haspopup="true"
                                  onClick={() => setServicesOpen((s) => !s)}
-                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                       e.preventDefault();
-                                       setServicesOpen((s) => !s);
-                                    }
-                                 }}
+                                 onKeyDown={handleServicesKey}
                                  className={classNames(
                                     'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                                     current === link.id
@@ -185,7 +248,7 @@ export default function Header(): JSX.Element {
                                        : 'text-slate-700 dark:text-slate-200 hover:text-sky-600'
                                  )}
                               >
-                                 {link.label}
+                                 <span>{link.label}</span>
                                  <FaChevronDown
                                     className="text-xs opacity-80"
                                     aria-hidden
@@ -197,43 +260,52 @@ export default function Header(): JSX.Element {
                                     <motion.div
                                        initial={{
                                           opacity: 0,
-                                          y: -8,
+                                          y: -6,
                                           scale: 0.98,
                                        }}
                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                       exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
                                        transition={{
                                           duration: 0.16,
                                           ease: 'easeOut',
                                        }}
-                                       className="absolute right-0 mt-2 w-[340px] rounded-xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/5 overflow-hidden"
+                                       className="absolute right-0 mt-2 w-[360px] rounded-xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/6 overflow-hidden"
                                        role="menu"
                                        aria-label="Services menu"
                                     >
-                                       <div className="p-3 grid gap-2">
-                                          {SERVICES.map((s) => (
-                                             <Link
-                                                key={s.id}
-                                                to={`/services/${s.slug}`}
-                                                role="menuitem"
-                                                onClick={() =>
-                                                   setServicesOpen(false)
-                                                }
-                                                className="flex flex-col gap-0.5 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-                                             >
-                                                <div className="flex items-center justify-between">
-                                                   <div className="font-medium text-slate-900 dark:text-slate-100">
-                                                      {s.title}
+                                       <div className="p-4 grid gap-2">
+                                          {SERVICES.map((s) => {
+                                             const Icon =
+                                                SERVICE_ICON_MAP[s.id] ??
+                                                FiCode;
+                                             return (
+                                                <Link
+                                                   key={s.id}
+                                                   to={`/services/${s.slug}`}
+                                                   role="menuitem"
+                                                   onClick={() =>
+                                                      setServicesOpen(false)
+                                                   }
+                                                   className="flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+                                                >
+                                                   <div className="flex-shrink-0 h-9 w-9 rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-md bg-gradient-to-br from-sky-500 to-emerald-400">
+                                                      <Icon
+                                                         className="h-5 w-5"
+                                                         aria-hidden
+                                                      />
                                                    </div>
-                                                   <div className="text-xs text-slate-400">
-                                                      {/* icon slot */}
+
+                                                   <div className="flex-1">
+                                                      <div className="font-medium text-slate-900 dark:text-slate-100">
+                                                         {s.title}
+                                                      </div>
+                                                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                                                         {s.desc}
+                                                      </div>
                                                    </div>
-                                                </div>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400">
-                                                   {s.desc}
-                                                </div>
-                                             </Link>
-                                          ))}
+                                                </Link>
+                                             );
+                                          })}
                                        </div>
                                     </motion.div>
                                  )}
@@ -245,7 +317,7 @@ export default function Header(): JSX.Element {
                               to={link.to}
                               className={({ isActive }) =>
                                  classNames(
-                                    'text-sm px-3 py-2 rounded-lg',
+                                    'text-sm px-3 py-2 rounded-lg transition-colors',
                                     isActive
                                        ? 'text-sky-600 font-semibold'
                                        : 'text-slate-700 dark:text-slate-200 hover:text-sky-600'
@@ -259,6 +331,7 @@ export default function Header(): JSX.Element {
 
                      <SearchBar className="w-64" />
 
+                     {/* Theme toggle */}
                      <button
                         onClick={toggleTheme}
                         aria-label="Toggle theme"
@@ -266,17 +339,17 @@ export default function Header(): JSX.Element {
                         className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                      >
                         {isDark ? (
-                           <FaSun className="text-yellow-400" />
+                           <FaSun className="text-amber-400" />
                         ) : (
                            <FaMoon className="text-slate-700" />
                         )}
                      </button>
 
-                     <Link
-                        to="/contact"
-                        className="ml-2 inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-sky-600 to-indigo-500 text-white text-sm font-medium shadow hover:from-sky-500 hover:to-indigo-400 transition"
-                     >
-                        Get a Quote
+                     {/* CTA */}
+                     <Link to="/contact" aria-label="Get a Quote">
+                        <Button className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 via-orange-400 to-green-500 text-white shadow-md hover:brightness-95 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400">
+                           Get a Quote
+                        </Button>
                      </Link>
                   </div>
 
@@ -288,21 +361,24 @@ export default function Header(): JSX.Element {
                         className="p-2 rounded-md"
                      >
                         {isDark ? (
-                           <FaSun className="text-yellow-400" />
+                           <FaSun className="text-amber-400" />
                         ) : (
                            <FaMoon />
                         )}
                      </button>
 
                      <motion.button
-                        onClick={() =>
-                           startTransition(() => setMobileOpen((o) => !o))
-                        }
+                        onClick={toggleMobile}
                         aria-label={
                            mobileOpen ? 'Close navigation' : 'Open navigation'
                         }
                         className="p-2 rounded-md"
                         animate={{ rotate: mobileOpen ? 90 : 0 }}
+                        transition={{
+                           type: 'spring',
+                           stiffness: 300,
+                           damping: 24,
+                        }}
                      >
                         {mobileOpen ? <FaTimes /> : <FaBars />}
                      </motion.button>
@@ -314,47 +390,58 @@ export default function Header(): JSX.Element {
             <AnimatePresence>
                {mobileOpen && (
                   <motion.div
-                     initial={{ height: 0, opacity: 0 }}
-                     animate={{ height: 'auto', opacity: 1 }}
-                     exit={{ height: 0, opacity: 0 }}
-                     className="md:hidden overflow-hidden bg-white dark:bg-slate-900 shadow-lg"
+                     ref={mobileRef}
+                     initial={{ opacity: 0, y: -8 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: -8 }}
+                     transition={{ duration: 0.22, ease: 'easeOut' }}
+                     className="md:hidden"
+                     role="dialog"
+                     aria-label="Mobile navigation"
                   >
-                     <nav
-                        className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800"
-                        aria-label="Mobile navigation"
-                     >
-                        {NAV_LINKS.map((link) =>
-                           !link.dropdown ? (
-                              <NavLink
-                                 key={link.to}
-                                 to={link.to}
-                                 className="p-4 text-base"
+                     <div className="overflow-hidden bg-white dark:bg-slate-900 shadow-lg">
+                        <nav
+                           className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800"
+                           aria-label="Mobile navigation"
+                        >
+                           {NAV_LINKS.map((link) =>
+                              !link.dropdown ? (
+                                 <NavLink
+                                    key={link.to}
+                                    to={link.to}
+                                    className="p-4 text-base"
+                                    onClick={() => setMobileOpen(false)}
+                                 >
+                                    {link.label}
+                                 </NavLink>
+                              ) : (
+                                 <MobileServices
+                                    key={link.to}
+                                    items={SERVICES}
+                                    onClose={() => setMobileOpen(false)}
+                                 />
+                              )
+                           )}
+
+                           <div className="p-4">
+                              <SearchBar mobile placeholder="Search…" />
+                           </div>
+
+                           <div className="p-4 grid gap-2">
+                              <Link
+                                 to="/contact"
                                  onClick={() => setMobileOpen(false)}
                               >
-                                 {link.label}
-                              </NavLink>
-                           ) : (
-                              <MobileServices
-                                 key={link.to}
-                                 items={SERVICES}
-                                 onClose={() => setMobileOpen(false)}
-                              />
-                           )
-                        )}
-
-                        <div className="p-4">
-                           <SearchBar mobile placeholder="Search…" />
-                        </div>
-
-                        <div className="p-4">
-                           <Link
-                              to="/contact"
-                              className="w-full inline-block text-center px-4 py-2 rounded-lg bg-sky-600 text-white"
-                           >
-                              Get a Quote
-                           </Link>
-                        </div>
-                     </nav>
+                                 <Button className="w-full bg-gradient-to-r from-blue-600 via-orange-400 to-green-500 text-black">
+                                    Get a Quote
+                                 </Button>
+                              </Link>
+                              <div className="text-center text-sm text-slate-500">
+                                 Or call us: +263 78 407 1973
+                              </div>
+                           </div>
+                        </nav>
+                     </div>
                   </motion.div>
                )}
             </AnimatePresence>
@@ -380,8 +467,9 @@ function MobileServices({
             onClick={() => setOpen((o) => !o)}
             className="w-full flex justify-between items-center font-medium text-base"
             aria-expanded={open}
+            aria-controls="mobile-services-list"
          >
-            Services
+            <span>Services</span>
             <FaChevronDown
                className={classNames(
                   'transition-transform',
@@ -393,22 +481,32 @@ function MobileServices({
          <AnimatePresence>
             {open && (
                <motion.ul
+                  id="mobile-services-list"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="mt-2 space-y-2 pl-4"
+                  transition={{ duration: 0.22 }}
+                  className="mt-2 space-y-2 pl-0"
                >
-                  {items.map((s) => (
-                     <li key={s.id}>
-                        <Link
-                           to={`/services/${s.slug}`}
-                           onClick={onClose}
-                           className="block py-2 text-slate-700 dark:text-slate-200 hover:underline"
-                        >
-                           {s.title}
-                        </Link>
-                     </li>
-                  ))}
+                  {items.map((s) => {
+                     const Icon = SERVICE_ICON_MAP[s.id] ?? FiCode;
+                     return (
+                        <li key={s.id}>
+                           <Link
+                              to={`/services/${s.slug}`}
+                              onClick={onClose}
+                              className="flex items-center gap-3 py-2 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                           >
+                              <div className="flex-shrink-0 h-9 w-9 rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-md bg-gradient-to-br from-sky-500 to-emerald-400">
+                                 <Icon className="h-5 w-5" aria-hidden />
+                              </div>
+                              <div className="text-slate-700 dark:text-slate-200">
+                                 {s.title}
+                              </div>
+                           </Link>
+                        </li>
+                     );
+                  })}
                </motion.ul>
             )}
          </AnimatePresence>
@@ -419,7 +517,7 @@ function MobileServices({
 /* ---------------------------
    Top ribbon with:
    left  => social icons
-   center => sliding messages (hidden on xs)
+   center => sliding messages
    right => location + email
    --------------------------- */
 function TopRibbonSliding(): JSX.Element {
@@ -432,7 +530,7 @@ function TopRibbonSliding(): JSX.Element {
    useEffect(() => {
       const t = setInterval(
          () => setIndex((i) => (i + 1) % messages.length),
-         3600
+         4200
       );
       return () => clearInterval(t);
    }, []);
@@ -440,15 +538,15 @@ function TopRibbonSliding(): JSX.Element {
    return (
       <div className="fixed inset-x-0 top-0 z-50 pointer-events-none">
          <div className="w-full">
-            {/* full-width gradient bar */}
+            {/* full-width gradient bar using blue → orange → green */}
             <div
-               className="h-11 flex items-center justify-center text-sm text-white"
+               className="h-11 flex items-center justify-center text-sm text-white pointer-events-auto"
                style={{
                   background:
-                     'linear-gradient(90deg,#1e40af 0%,#0891b2 50%,#06b6d4 100%)',
+                     'linear-gradient(90deg,#0369a1 0%,#fb923c 50%,#10b981 100%)',
                }}
             >
-               <div className="max-w-7xl w-full px-4 md:px-8 flex items-center justify-between pointer-events-auto">
+               <div className="max-w-7xl w-full px-4 md:px-8 flex items-center justify-between">
                   {/* LEFT: social icons */}
                   <div className="flex items-center gap-3">
                      <a
@@ -489,9 +587,9 @@ function TopRibbonSliding(): JSX.Element {
                      </a>
                   </div>
 
-                  {/* CENTER: sliding message (hidden on very small screens) */}
+                  {/* CENTER: sliding message */}
                   <div className="flex-1 flex items-center justify-center px-4 overflow-hidden">
-                     <div className="h-6 relative w-full max-w-xl hidden sm:block">
+                     <div className="h-6 relative w-full max-w-xl">
                         <AnimatePresence mode="wait">
                            <motion.div
                               key={index}
@@ -522,8 +620,8 @@ function TopRibbonSliding(): JSX.Element {
                      <div className="flex items-center gap-2">
                         <FaEnvelope aria-hidden />
                         <a
-                           href="mailto:info@shannytech.solutions"
                            className="underline"
+                           href="mailto:info@shannytech.solutions"
                         >
                            info@shannytech.solutions
                         </a>
@@ -532,7 +630,7 @@ function TopRibbonSliding(): JSX.Element {
                </div>
             </div>
 
-            {/* decorative SVG wave (subtle) */}
+            {/* decorative SVG wave */}
             <div className="-mt-1 pointer-events-none">
                <svg
                   className="w-full block"
