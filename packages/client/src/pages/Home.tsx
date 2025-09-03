@@ -75,10 +75,7 @@ export default function Home(): JSX.Element {
             {/* Features */}
             <section className="py-16 bg-slate-50 dark:bg-slate-800">
                <div className="mx-auto max-w-7xl px-4 md:px-8">
-                  <SectionHeader
-                     title="Why teams choose us"
-                     subtitle="Design, build and operate production-grade software with confidence."
-                  />
+                  <SectionHeader title={''} />
 
                   <Suspense fallback={<SectionFallback height={360} />}>
                      <FeaturesGrid />
@@ -89,10 +86,7 @@ export default function Home(): JSX.Element {
             {/* Testimonials */}
             <section className="py-16">
                <div className="mx-auto max-w-7xl px-4 md:px-8">
-                  <SectionHeader
-                     title="Customer stories"
-                     subtitle="Real outcomes from organizations we've partnered with."
-                  />
+                  <SectionHeader title={''} />
 
                   <Suspense fallback={<SectionFallback height={300} />}>
                      <Testimonials />
