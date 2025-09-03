@@ -157,53 +157,6 @@ export default function Footer(): JSX.Element {
                   </div>
                </div>
 
-               {/* Services (sitemap style) */}
-               <div>
-                  <h4 className="text-sm font-semibold text-white">Services</h4>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-300">
-                     <li>
-                        <Link
-                           to="/services/web-development"
-                           className="hover:underline"
-                        >
-                           Web Development
-                        </Link>
-                     </li>
-                     <li>
-                        <Link
-                           to="/services/mobile-apps"
-                           className="hover:underline"
-                        >
-                           Mobile Apps
-                        </Link>
-                     </li>
-                     <li>
-                        <Link
-                           to="/services/ai-integrations"
-                           className="hover:underline"
-                        >
-                           AI Integrations
-                        </Link>
-                     </li>
-                     <li>
-                        <Link
-                           to="/services/cloud-devops"
-                           className="hover:underline"
-                        >
-                           Cloud & DevOps
-                        </Link>
-                     </li>
-                     <li>
-                        <Link
-                           to="/services/networking"
-                           className="hover:underline"
-                        >
-                           Networking & Security
-                        </Link>
-                     </li>
-                  </ul>
-               </div>
-
                {/* Resources */}
                <div>
                   <h4 className="text-sm font-semibold text-white">
@@ -218,16 +171,6 @@ export default function Footer(): JSX.Element {
                      <li>
                         <Link to="/blog" className="hover:underline">
                            Blog
-                        </Link>
-                     </li>
-                     <li>
-                        <Link to="/about" className="hover:underline">
-                           About us
-                        </Link>
-                     </li>
-                     <li>
-                        <Link to="/contact" className="hover:underline">
-                           Contact
                         </Link>
                      </li>
                   </ul>
