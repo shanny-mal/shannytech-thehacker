@@ -1,3 +1,4 @@
+// src/pages/Home.tsx
 import { Suspense, lazy, type JSX } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -24,7 +25,6 @@ function SectionHeader({
          viewport={{ once: true, amount: 0.2 }}
          transition={{ duration: 0.45 }}
          className="mb-8"
-         aria-hidden={false}
       >
          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
             {title}
@@ -57,14 +57,14 @@ export default function Home(): JSX.Element {
          <HeroSection />
 
          {/* Main content */}
-         <main id="main-content" role="main" className="pt-12">
+         <main id="main-content" role="main" className="pt-0 z-0">
             {/* Services */}
-            <section aria-labelledby="services-heading" className="py-16">
+            <section
+               aria-labelledby="services-heading"
+               className="py-16 overflow-visible z-0"
+            >
                <div className="mx-auto max-w-7xl px-4 md:px-8">
-                  <SectionHeader
-                     title="Our services"
-                     subtitle="End-to-end product development, AI-enabled experiences and reliable cloud platforms."
-                  />
+                  <SectionHeader title={''} />
 
                   <Suspense fallback={<SectionFallback height={340} />}>
                      <ServicesPreview />
@@ -73,7 +73,10 @@ export default function Home(): JSX.Element {
             </section>
 
             {/* Features */}
-            <section className="py-16 bg-slate-50 dark:bg-slate-800">
+            <section
+               className="py-16 bg-slate-50 dark:bg-slate-800 overflow-visible z-0"
+               aria-labelledby="features-heading"
+            >
                <div className="mx-auto max-w-7xl px-4 md:px-8">
                   <SectionHeader title={''} />
 
@@ -84,7 +87,10 @@ export default function Home(): JSX.Element {
             </section>
 
             {/* Testimonials */}
-            <section className="py-16">
+            <section
+               className="py-16 overflow-visible z-0"
+               aria-labelledby="testimonials-heading"
+            >
                <div className="mx-auto max-w-7xl px-4 md:px-8">
                   <SectionHeader title={''} />
 
@@ -95,13 +101,21 @@ export default function Home(): JSX.Element {
             </section>
          </main>
 
-         {/* Floating CTA */}
-         <div className="fixed right-6 bottom-6 z-50">
-            <Link to="/contact" aria-label="Get a quote">
-               <Button className="bg-gradient-to-r from-sky-500 via-amber-400 to-emerald-400 text-black shadow-lg px-5 py-3">
-                  Get a Quote
-               </Button>
-            </Link>
+         {/* Removed floating fixed CTA overlay to avoid content overlap.
+          Use an in-flow CTA instead if needed — example below (keeps layout natural). */}
+
+         <div className="py-12 bg-transparent">
+            <div className="mx-auto max-w-7xl px-4 md:px-8 text-center">
+               <Link
+                  to="/contact"
+                  aria-label="Get a quote"
+                  className="inline-block"
+               >
+                  <Button className="bg-gradient-to-r from-sky-500 via-amber-400 to-emerald-400 text-black shadow-md px-6 py-3">
+                     Get a Quote
+                  </Button>
+               </Link>
+            </div>
          </div>
       </div>
    );

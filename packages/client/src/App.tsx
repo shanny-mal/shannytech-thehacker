@@ -1,13 +1,27 @@
 // src/App.tsx
-import React, { Suspense, lazy, type JSX } from 'react';
+import React, {
+   Suspense,
+   lazy,
+   type JSX,
+   useLayoutEffect,
+   useRef,
+   useState,
+   useCallback,
+   useMemo,
+   useEffect,
+} from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
-import CookieConsent from './components/CookieConsent'; // ensure this file exists
+import CookieConsent from './components/CookieConsent'; // ensure this exists
 
 /* Lazy-loaded pages (faster initial bundle) */
 const Home = lazy(() => import('./pages/Home'));
+const Services = lazy(() => import('./pages/Services'));
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
+//const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import('./components/NotFound'));
 
 /* Small accessible loading fallback used by Suspense */
 function LoadingFallback(): JSX.Element {
@@ -38,7 +52,8 @@ class RouteErrorBoundary extends React.Component<
    }
 
    componentDidCatch(_error: unknown, _info: unknown) {
-      // Optionally log errors to your monitoring service here.
+      // Optionally log the error to an analytics/monitoring service here
+      // console.error("Route error:", error, info);
    }
 
    render() {
@@ -66,7 +81,6 @@ class RouteErrorBoundary extends React.Component<
             </main>
          );
       }
-
       return this.props.children as React.ReactElement;
    }
 }
@@ -74,42 +88,185 @@ class RouteErrorBoundary extends React.Component<
 /* ScrollToTop: scrolls to top on route changes */
 function ScrollToTop(): null {
    const { pathname } = useLocation();
-   React.useEffect(() => {
-      // Instantly scroll to top on route changes (avoids jank when using lazy routes)
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+   useEffect(() => {
+      if (typeof window !== 'undefined') {
+         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
    }, [pathname]);
    return null;
 }
 
-/* App component */
+/* Helper: safely measure an element's height (rounded up) */
+function getHeight(el: Element | null): number {
+   if (!el || !(el instanceof HTMLElement)) return 0;
+   return Math.ceil(el.getBoundingClientRect().height);
+}
+
+/**
+ * App
+ *
+ * Layout algorithm:
+ * - Measure the top stacked bars (top ribbon + nav) and footer height.
+ * - Apply exact `paddingTop` to <main> so fixed header doesn't overlap content.
+ * - Compute `minHeight` so main area tries to fill remaining viewport (avoids premature page overflow).
+ */
 export default function App(): JSX.Element {
+   const footerWrapperRef = useRef<HTMLDivElement | null>(null);
+   const appRootRef = useRef<HTMLDivElement | null>(null);
+
+   // measured px values (defaults chosen as a reasonable fallback)
+   const [topOffsetPx, setTopOffsetPx] = useState<number>(88);
+   const [footerHeightPx, setFooterHeightPx] = useState<number>(88);
+
+   // measurement callback (stable via useCallback)
+   const measure = useCallback(() => {
+      if (typeof document === 'undefined') return;
+
+      // Prefer explicit data attributes if present in your Header/TopRibbon.
+      // Fallback to the original selectors used earlier.
+      const topRibbon =
+         document.querySelector('[data-top-ribbon]') ??
+         document.querySelector('.fixed.inset-x-0.top-0.z-50') ??
+         null;
+
+      // we added aria-label="Main navigation" to nav in Header — use that where possible
+      const nav =
+         document.querySelector('nav[aria-label="Main navigation"]') ??
+         document.querySelector('header nav') ??
+         null;
+
+      const topRibbonH = getHeight(topRibbon);
+      const navH = getHeight(nav);
+
+      const totalTop = Math.max(0, topRibbonH + navH);
+
+      const footerEl = footerWrapperRef.current;
+      const footerH = footerEl
+         ? Math.ceil(footerEl.getBoundingClientRect().height)
+         : 0;
+
+      setTopOffsetPx(totalTop || 88);
+      setFooterHeightPx(footerH || 88);
+   }, []);
+
+   // Run measurements synchronously after DOM mutates so layout is accurate
+   useLayoutEffect(() => {
+      if (typeof window === 'undefined') return;
+
+      let raf = 0;
+
+      const measureRaf = () => {
+         if (raf) cancelAnimationFrame(raf);
+         raf = requestAnimationFrame(() => {
+            measure();
+            raf = 0;
+         });
+      };
+
+      // initial measurement
+      measureRaf();
+
+      // re-measure after images/fonts load to reduce jumps
+      const onLoad = () => measureRaf();
+      window.addEventListener('load', onLoad, { once: true });
+
+      // measure on resize/orientation change with throttling via RAF
+      const onResize = () => measureRaf();
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+
+      // also observe footer in case it dynamically changes (optional)
+      let ro: ResizeObserver | null = null;
+      try {
+         if (
+            footerWrapperRef.current &&
+            typeof ResizeObserver !== 'undefined'
+         ) {
+            ro = new ResizeObserver(() => measureRaf());
+            ro.observe(footerWrapperRef.current);
+         }
+      } catch {
+         ro = null;
+      }
+
+      return () => {
+         if (raf) cancelAnimationFrame(raf);
+         window.removeEventListener('load', onLoad);
+         window.removeEventListener('resize', onResize);
+         window.removeEventListener('orientationchange', onResize);
+         if (ro && footerWrapperRef.current)
+            ro.unobserve(footerWrapperRef.current);
+      };
+   }, [measure]);
+
+   // Prevent horizontal overflow globally for this app root (safe cleanup)
+   useEffect(() => {
+      const root = appRootRef.current;
+      const prevBodyOverflowX =
+         typeof document !== 'undefined' ? document.body.style.overflowX : '';
+      if (typeof document !== 'undefined')
+         document.body.style.overflowX = 'hidden';
+
+      if (root) {
+         root.style.overflowX = 'hidden';
+         root.style.boxSizing = 'border-box';
+      }
+
+      return () => {
+         if (typeof document !== 'undefined')
+            document.body.style.overflowX = prevBodyOverflowX;
+         if (root) {
+            root.style.overflowX = '';
+            root.style.boxSizing = '';
+         }
+      };
+   }, []);
+
+   // compute inline styles for main once values are set
+   const mainStyle = useMemo<React.CSSProperties>(
+      () => ({
+         paddingTop: `${topOffsetPx}px`,
+         minHeight: `calc(100vh - ${topOffsetPx + footerHeightPx}px)`,
+         overflow: 'auto',
+      }),
+      [topOffsetPx, footerHeightPx]
+   );
+
    return (
-      <div className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <div
+         ref={appRootRef}
+         className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+      >
          <Header />
 
          {/* ScrollToTop listens to route changes */}
          <ScrollToTop />
 
-         {/* Main: add top padding to account for the fixed TopRibbon + Navbar.
-          Adjust the 'paddingTop' value if you change header heights. */}
-         <main
-            id="main-content"
-            className="flex-1"
-            style={{ paddingTop: '5.5rem' }}
-         >
+         {/* Main: measured top padding prevents overlap with fixed header/ribbon */}
+         <main id="main-content" className="flex-1 w-full" style={mainStyle}>
             <RouteErrorBoundary>
                <Suspense fallback={<LoadingFallback />}>
                   <Routes>
                      <Route path="/" element={<Home />} />
-                     {/* Add other routes here: /services, /contact, etc. */}
+                     <Route path="/services" element={<Services />} />
+                     <Route
+                        path="/services/:slug"
+                        element={<ServiceDetail />}
+                     />
+
+                     {/* Add other routes here (lazy import them similarly) */}
+                     <Route path="*" element={<NotFound />} />
                   </Routes>
                </Suspense>
             </RouteErrorBoundary>
          </main>
 
-         <Footer />
+         {/* Footer wrapper (measured by ResizeObserver to update layout) */}
+         <div ref={footerWrapperRef}>
+            <Footer />
+         </div>
 
-         {/* Global cookie consent banner — appears on first visit (client-only) */}
+         {/* Client-only cookie consent; component should itself be safe for SSR */}
          <CookieConsent privacyHref="/privacy" />
       </div>
    );

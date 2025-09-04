@@ -1,3 +1,4 @@
+// src/components/Footer.tsx
 import { type JSX, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -10,16 +11,12 @@ import {
    FaLinkedinIn,
    FaEnvelopeOpenText,
 } from 'react-icons/fa';
-// shadcn/ui Button — adjust import path if needed
 import { Button } from '@/components/ui/button';
 
 /**
- * World-class Footer
- * - Responsive 4-column grid (Company / Services / Resources / Contact + Newsletter)
- * - Prominent CTA strip above links
- * - Accessible newsletter form with inline validation & polite live region
- * - Social icons, contact block, sitemap links
- * - Modern colors: deep navy/black base with warm amber & fresh green accents
+ * Responsive, world-class Footer — fixed overlap bugs on mobile/tablet:
+ *  - uses min-w-0, w-full and responsive stacks
+ *  - input is flexible and doesn't overflow
  */
 
 export default function Footer(): JSX.Element {
@@ -37,7 +34,6 @@ export default function Footer(): JSX.Element {
       const value = email.trim();
       if (!/^\S+@\S+\.\S+$/.test(value)) {
          setStatus('error');
-         // focus input to aid correction
          inputRef.current?.focus();
          setTimeout(() => setStatus(null), 3000);
          return;
@@ -45,7 +41,7 @@ export default function Footer(): JSX.Element {
 
       try {
          setStatus('sending');
-         // Demo: simulate network call. Replace with real API call in production.
+         // Demo: replace with real API call
          await new Promise((res) => setTimeout(res, 900));
          setStatus('success');
          setEmail('');
@@ -60,28 +56,22 @@ export default function Footer(): JSX.Element {
       <footer className="bg-gradient-to-r from-black via-slate-900 to-slate-950 text-slate-100">
          {/* CTA strip */}
          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <div className="rounded-2xl bg-gradient-to-r from-amber-600/10 to-emerald-500/6 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="rounded-2xl bg-gradient-to-r from-amber-600/8 to-emerald-500/6 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg md:text-xl font-extrabold text-white">
+                  <h3 className="text-lg md:text-xl font-extrabold text-white break-words">
                      Ready to build something great?
                   </h3>
-                  <p className="mt-1 text-sm text-slate-200/90 max-w-xl">
+                  <p className="mt-1 text-sm text-slate-200/90 max-w-full">
                      Work with ShannyTech to design modern products, grow
                      revenue and deliver reliable systems — starting with a free
                      30min consultation.
                   </p>
                </div>
 
-               <div className="flex items-center gap-3">
-                  <Link to="/contact" className="inline-block">
-                     <Button className="bg-gradient-to-r from-amber-400 to-emerald-400 text-black px-4 py-2 shadow-lg">
-                        Get a free consultation
-                     </Button>
-                  </Link>
-
+               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                   <a
                      href="/case-studies"
-                     className="inline-flex items-center gap-2 rounded-md px-4 py-2 border border-white/8 text-sm text-slate-100 hover:bg-white/5 transition"
+                     className="inline-flex items-center gap-2 rounded-md px-4 py-2 border border-white/8 text-sm text-slate-100 hover:bg-white/5 transition w-full sm:w-auto justify-center"
                   >
                      View case studies
                   </a>
@@ -93,7 +83,7 @@ export default function Footer(): JSX.Element {
          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
                {/* Company */}
-               <div>
+               <div className="min-w-0">
                   <Link
                      to="/"
                      aria-label="ShannyTech home"
@@ -112,7 +102,7 @@ export default function Footer(): JSX.Element {
                      </div>
                   </Link>
 
-                  <p className="mt-4 text-sm text-slate-300 max-w-sm">
+                  <p className="mt-4 text-sm text-slate-300 max-w-full">
                      We design & build modern digital products and integrate AI
                      to help organizations scale and bridge the digital divide.
                   </p>
@@ -158,18 +148,24 @@ export default function Footer(): JSX.Element {
                </div>
 
                {/* Resources */}
-               <div>
+               <div className="min-w-0">
                   <h4 className="text-sm font-semibold text-white">
                      Resources
                   </h4>
                   <ul className="mt-4 space-y-2 text-sm text-slate-300">
                      <li>
-                        <Link to="/case-studies" className="hover:underline">
+                        <Link
+                           to="/case-studies"
+                           className="hover:underline break-words"
+                        >
                            Case studies
                         </Link>
                      </li>
                      <li>
-                        <Link to="/blog" className="hover:underline">
+                        <Link
+                           to="/blog"
+                           className="hover:underline break-words"
+                        >
                            Blog
                         </Link>
                      </li>
@@ -182,13 +178,13 @@ export default function Footer(): JSX.Element {
                      <div className="mt-3 flex flex-col gap-2 text-sm">
                         <Link
                            to="/privacy"
-                           className="hover:underline text-slate-300"
+                           className="hover:underline text-slate-300 break-words"
                         >
                            Privacy
                         </Link>
                         <Link
                            to="/terms"
-                           className="hover:underline text-slate-300"
+                           className="hover:underline text-slate-300 break-words"
                         >
                            Terms
                         </Link>
@@ -197,13 +193,15 @@ export default function Footer(): JSX.Element {
                </div>
 
                {/* Contact & Newsletter */}
-               <div>
+               <div className="min-w-0">
                   <h4 className="text-sm font-semibold text-white">Contact</h4>
 
                   <div className="mt-4 space-y-3 text-sm text-slate-300">
                      <div className="flex items-start gap-3">
                         <FaMapMarkerAlt className="mt-1 text-amber-400 flex-shrink-0" />
-                        <div>2964 Batonga, Kariba, Zimbabwe</div>
+                        <div className="break-words">
+                           2964 Batonga, Kariba, Zimbabwe
+                        </div>
                      </div>
 
                      <div className="flex items-start gap-3">
@@ -211,7 +209,7 @@ export default function Footer(): JSX.Element {
                         <div>
                            <a
                               href="mailto:info@shannytech.solutions"
-                              className="underline"
+                              className="underline break-words"
                            >
                               info@shannytech.solutions
                            </a>
@@ -221,7 +219,10 @@ export default function Footer(): JSX.Element {
                      <div className="flex items-start gap-3">
                         <FaPhoneAlt className="mt-1 text-sky-400 flex-shrink-0" />
                         <div>
-                           <a href="tel:+263784071973" className="underline">
+                           <a
+                              href="tel:+263784071973"
+                              className="underline break-words"
+                           >
                               +263 78 407 1973
                            </a>
                         </div>
@@ -236,7 +237,8 @@ export default function Footer(): JSX.Element {
                      <label htmlFor="footer-email" className="sr-only">
                         Email address
                      </label>
-                     <div className="flex gap-2">
+
+                     <div className="flex gap-2 items-center w-full">
                         <input
                            id="footer-email"
                            ref={inputRef}
@@ -245,15 +247,18 @@ export default function Footer(): JSX.Element {
                            value={email}
                            onChange={(e) => setEmail(e.target.value)}
                            placeholder="Your email"
-                           className="flex-1 px-3 py-2 rounded-md bg-white/5 border border-white/6 placeholder:text-slate-400 text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                           className="flex-1 min-w-0 px-3 py-2 rounded-md bg-white/5 border border-white/6 placeholder:text-slate-400 text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300 w-full"
                            aria-invalid={status === 'error'}
                         />
-                        <Button
-                           type="submit"
-                           className="px-4 py-2 bg-gradient-to-r from-amber-400 to-emerald-400 text-black"
-                        >
-                           {status === 'sending' ? 'Sending…' : 'Subscribe'}
-                        </Button>
+
+                        <div className="flex-shrink-0">
+                           <Button
+                              type="submit"
+                              className="px-4 py-2 bg-gradient-to-r from-amber-400 to-emerald-400 text-black"
+                           >
+                              {status === 'sending' ? 'Sending…' : 'Subscribe'}
+                           </Button>
+                        </div>
                      </div>
 
                      <div
@@ -286,13 +291,13 @@ export default function Footer(): JSX.Element {
          {/* Bottom bar */}
          <div className="border-t border-white/6">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-300">
-               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+               <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
                   <div>© {year} ShannyTech</div>
                   <div className="hidden sm:block mx-2">•</div>
                   <div>Built with care</div>
                </div>
 
-               <div className="flex items-center gap-4">
+               <div className="flex flex-col sm:flex-row sm:items-center gap-3 items-center">
                   <div className="text-xs text-slate-400">
                      Created by Shannon Chipezeze
                   </div>
