@@ -15,6 +15,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import About from './pages/About';
+import Privacy from './pages/Privacy';
 import CookieConsent from './components/CookieConsent';
 
 /* Lazy-loaded pages (faster initial bundle) */
@@ -257,6 +258,7 @@ export default function App(): JSX.Element {
 
                      {/* Add other routes here (lazy import them similarly) */}
                      <Route path="/about" element={<About />} />
+                     <Route path="/privacy" element={<Privacy />} />
                      <Route path="*" element={<NotFound />} />
                   </Routes>
                </Suspense>
