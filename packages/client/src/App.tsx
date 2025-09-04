@@ -23,7 +23,7 @@ import CookieConsent from './components/CookieConsent';
 const Home = lazy(() => import('./pages/Home'));
 const Services = lazy(() => import('./pages/Services'));
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
-//const Contact = lazy(() => import("./pages/Contact"));
+const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./components/NotFound'));
 
 /* Small accessible loading fallback used by Suspense */
@@ -259,6 +259,7 @@ export default function App(): JSX.Element {
 
                      {/* Add other routes here (lazy import them similarly) */}
                      <Route path="/about" element={<About />} />
+                     <Route path="/contact" element={<Contact />} />
                      <Route path="/privacy" element={<Privacy />} />
                      <Route path="/terms" element={<Terms />} />
                      <Route path="*" element={<NotFound />} />
