@@ -14,7 +14,8 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
-import CookieConsent from './components/CookieConsent'; // ensure this exists
+import About from './pages/About';
+import CookieConsent from './components/CookieConsent';
 
 /* Lazy-loaded pages (faster initial bundle) */
 const Home = lazy(() => import('./pages/Home'));
@@ -255,6 +256,7 @@ export default function App(): JSX.Element {
                      />
 
                      {/* Add other routes here (lazy import them similarly) */}
+                     <Route path="/about" element={<About />} />
                      <Route path="*" element={<NotFound />} />
                   </Routes>
                </Suspense>
