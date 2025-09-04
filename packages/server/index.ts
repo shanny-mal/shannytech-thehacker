@@ -2,7 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import contactRoutes from './routes/contact';
+import contactRoutes from './src/routes/contact';
 
 dotenv.config();
 
